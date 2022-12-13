@@ -11,7 +11,7 @@ namespace NorthwindTests
         [SetUp]
         public void Setup()
         {
-            _customerManager = new CustomerManager();
+           _customerManager = new CustomerManager();
             // remove test entry in DB if present
             using (var db = new NorthwindContext())
             {
@@ -26,15 +26,13 @@ namespace NorthwindTests
         }
 
         [Test]
-        public void WhenANewCustomerIsAddedToTheDatabaseUsingCreate_TheNumberOfCustomersIncreasesBy1()
+        public void WhenANewCustomerIsAdded_TheNumberOfCustomersIncreasesBy1()
         {
             using (var db = new NorthwindContext())
             {
                 var numberOfCustomersBefore = db.Customers.Count();
                 _customerManager.Create("MANDA", "Nish Mandal", "Sparta Global");
                 var numberOfCustomersAfter = db.Customers.Count();
-
-
 
                 Assert.That(numberOfCustomersBefore + 1, Is.EqualTo(numberOfCustomersAfter));
             }
@@ -53,38 +51,31 @@ namespace NorthwindTests
         }
 
         [Test]
-        public void WhenACustomersDetailsAreChanged_TheDatabaseIsUpdatedWithTheCorrectDetails()
+        public void WhenACustomersDetailsAreChanged_TheDatabaseIsUpdated()
         {
             using (var db = new NorthwindContext())
             {
-                _customerManager.Create("MANDA", "Nish Mandal", "Sparta Global");
-                _customerManager.Update("MANDA", "Phil Windridge", "France", "Paris", "ab12cd");
-                var selectedCustomer = db.Customers.Find("MANDA");
-                Assert.That(selectedCustomer.ContactName, Is.EqualTo("Phil Windridge"));
-                Assert.That(selectedCustomer.Country, Is.EqualTo("France"));
-                Assert.That(selectedCustomer.City, Is.EqualTo("Paris"));
-                Assert.That(selectedCustomer.PostalCode, Is.EqualTo("ab12cd"));
+                _customerManager.Create("MANDA", "Nish Mandal", "Sparta Global", "Paris");
+
+                _customerManager.Update("MANDA", "Nish Mandal", "UK", "Birmingham", null);
+
+                var updatedCustomer = db.Customers.Find("MANDA");
+                Assert.That(updatedCustomer.City, Is.EqualTo("Birmingham"));
             }
         }
 
         [Test]
         public void WhenACustomerIsUpdated_SelectedCustomerIsUpdated()
         {
-            using (var db = new NorthwindContext())
-            {
-                _customerManager.Create("MANDA", "Nish Mandal", "Sparta Global");
-                _customerManager.Update("MANDA", "Nish Mandal", "UK", "London", "e123fd");
-                var selectedCustomer = db.Customers.Find("MANDA");
-                Assert.That(selectedCustomer.Country, Is.EqualTo("UK"));
-                Assert.That(selectedCustomer.City, Is.EqualTo("London"));
-            }
-            
+            _customerManager.Create("MANDA", "Nish Mandal", "Sparta Global", "Paris");
+            _customerManager.Update("MANDA", "Nish Mandal", "UK", "Birmingham", null);
+            Assert.That(_customerManager.SelectedCustomer.City, Is.EqualTo("Birmingham"));
         }
 
         [Test]
         public void WhenACustomerIsNotInTheDatabase_Update_ReturnsFalse()
         {
-            var result = _customerManager.Update("MANDA", contactName: "Nish Mandal", country: "UK", city: "Birmingham", postcode: "AB2 2DE");
+            var result = _customerManager.Update("MANDA", contactName: "Nish Mandal", country: "UK", city: "Birmingham",  postcode: "AB2 2DE");
             Assert.That(result, Is.False);
         }
 
@@ -93,24 +84,43 @@ namespace NorthwindTests
         {
             using (var db = new NorthwindContext())
             {
-                _customerManager.Create("MANDA", "Nish Mandal", "Sparta Global");
-                var numberOfCustomerBefore = db.Customers.Count();
+                var newCustomer = new Customer()
+                {
+                    CustomerId = "MANDA",
+                    ContactName = "Nish Mandal",
+                    CompanyName = "Sparta Global"
+                };
+
+                db.Customers.Add(newCustomer);
+                db.SaveChanges();
+                var numberOfCustomersBefore = db.Customers.ToList().Count();
                 _customerManager.Delete("MANDA");
-                var numberOfCustomerAfter = db.Customers.Count();
-                Assert.That(numberOfCustomerBefore - 1, Is.EqualTo(numberOfCustomerAfter));
+                var numberOfCustomersAfter = db.Customers.ToList().Count();
+                Assert.That(numberOfCustomersBefore - 1, Is.EqualTo(numberOfCustomersAfter));
             }
         }
 
         [Test]
-        public void WhenACustomerIsRemovedUsingDelete_TheyAreNoLongerInTheDatabase()
+        public void WhenACustomerIsRemoved_TheyAreNoLongerInTheDatabase()
         {
             using (var db = new NorthwindContext())
             {
-                _customerManager.Delete("MANDA");
-                var deletedCustomer = db.Customers.Find("MANDA");
-                Assert.That(deletedCustomer, Is.Null);
+                var newCustomer = new Customer()
+                {
+                    CustomerId = "MANDA",
+                    ContactName = "Nish Mandal",
+                    CompanyName = "Sparta Global"
+                };
+
+                db.Customers.Add(newCustomer);
+                db.SaveChanges();
             }
-            
+            _customerManager.Delete("MANDA");
+            using (var db = new NorthwindContext())
+            {
+                var result = db.Customers.Where(c => c.CustomerId == "MANDA").FirstOrDefault();
+                Assert.That(result, Is.Null);
+            }
         }
 
         [TearDown]
