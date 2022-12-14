@@ -3,11 +3,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using NorthwindData;
+using NorthwindData.Services;
 
 namespace NorthwindBusiness
 {
     public class CustomerManager
     {
+        private ICustomerService _service;
+
+        public CustomerManager() 
+        {
+            _service = new CustomerService();
+        }
+
+        public CustomerManager(ICustomerService service)
+        {
+            if (service == null)
+            {
+                throw new ArgumentNullException("ICustomerService object cannot be null");
+            }
+            _service = service;
+            
+        }
+
         public Customer SelectedCustomer { get; set; }
 
         public void SetSelectedCustomer(object selectedItem)
@@ -17,20 +35,18 @@ namespace NorthwindBusiness
 
         public List<Customer> RetrieveAll()
         {
-            using (var db = new NorthwindContext())
-            {
-                return db.Customers.ToList();
-            }
+            return _service.GetCustomerList();
         }
 
         public void Create(string customerId, string contactName, string companyName, string city = null)
         {
-            var newCust = new Customer() { CustomerId = customerId, ContactName = contactName, CompanyName = companyName, City = city };
-            using (var db = new NorthwindContext())
-            {
-                db.Customers.Add(newCust);
-                db.SaveChanges();
-            }
+            _service.CreateCustomer(
+                new Customer() { 
+                    CustomerId = customerId, 
+                    ContactName = contactName, 
+                    CompanyName = companyName, 
+                    City = city }
+                );
         }
 
         public bool Update(string customerId, string contactName, string country, string city, string postcode)
