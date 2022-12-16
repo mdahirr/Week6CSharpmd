@@ -4,6 +4,7 @@ namespace EF_ModelFirstTests
 {
     public class Tests
     {
+        CustomerManager _customerManager;
         [SetUp]
         public void Setup()
         {
@@ -23,7 +24,16 @@ namespace EF_ModelFirstTests
         [Test]
         public void WhenANewCustomerIsAdded_TheNumberOfCustomersIncreasesBy1()
         {
-            Assert.Fail();
+            using (var db = new SouthwindContext())
+            {
+                var numberOfCustomersBefore = db.Customers.Count();
+                _customerManager.Create("MANDA", "Nish Mandal", "Sparta Global");
+                var numberOfCustomersAfter = db.Customers.Count();
+
+
+
+                Assert.That(numberOfCustomersBefore + 1, Is.EqualTo(numberOfCustomersAfter));
+            }
         }
 
         [Test]

@@ -8,5 +8,10 @@ namespace EF_ModelFirst.Services
 {
     internal interface ICustomerService
     {
+        List<Customer> GetCustomerList();
+        Customer GetCustomerById(string customerId);
+        void CreateCustomer(Customer c);
+        void SaveCustomerChanges();
+        void RemoveCustomer(Customer c);
     }
 }

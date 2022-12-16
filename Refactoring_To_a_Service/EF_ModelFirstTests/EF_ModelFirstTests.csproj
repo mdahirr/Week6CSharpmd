@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\EF_ModelFirst\EF_ModelFirst_Refactored.csproj" />
+    <ProjectReference Include="..\EF_ModelFirst\EF_ModelFirst.csproj" />
   </ItemGroup>
 
 </Project>

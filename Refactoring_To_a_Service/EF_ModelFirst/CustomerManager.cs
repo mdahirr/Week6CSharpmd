@@ -1,13 +1,42 @@
-﻿using System;
+﻿using EF_ModelFirst.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace EF_ModelFirst
 {
-    internal class CustomerManager
+    public class CustomerManager
     {
+        private ICustomerService _service;
+
+        public CustomerManager()
+        {
+            _service = new CustomerService();
+        }
+
+        public CustomerManager(ICustomerService service)
+        {
+            if (service == null)
+            {
+                throw new ArgumentNullException("ICustomerService object cannot be null");
+            }
+            _service = service;
+        }
+        public Customer SelectedCustomer { get; set; }
+
+        public void SetSelectedCustomer(object selectedItem)
+        {
+            SelectedCustomer = (Customer)selectedItem;
+        }
+
+        public List<Customer> RetrieveAll() 
+        {
+            return _service.GetCustomerList();
+        }
+
         public void Read()
         {
             using (var db = new SouthwindContext()) 
@@ -19,13 +48,18 @@ namespace EF_ModelFirst
             }
         }
 
-        public void Create(Customer newCustomer)
+        public void Create(string customerId, string contactName, string city, string postalCode, string country)
         {
-            using (var db = new SouthwindContext())
-            {
-                db.Customers.Add(newCustomer);
-                db.SaveChanges();
-            }
+            _service.CreateCustomer(
+                 new Customer()
+                 {
+                     CustomerId = customerId,
+                     ContactName = contactName,
+                     City = city,
+                     PostalCode = postalCode,
+                     Country = country
+                 }
+                 );
         }
 
         public void Update(Customer updatedCustomer)
@@ -47,6 +81,15 @@ namespace EF_ModelFirst
                 db.Customers.Remove(customer);
                 db.SaveChanges();
             }
+        }
+
+        public void Save()
+        {
+            _service.SaveCustomerChanges(
+                new Customer()
+                {
+
+                });
         }
     }
 }
